@@ -4,8 +4,8 @@ Given /the following movies exist/ do |movies_table|
   movies_table.hashes.each do |movie|
     # each returned element will be a hash whose key is the table header.
     # you should arrange to add that movie to the database here.
+    Movie.create!(movie)
   end
-  fail "Unimplemented"
 end
 
 Then /(.*) seed movies should exist/ do | n_seeds |
@@ -18,7 +18,10 @@ end
 Then /I should see "(.*)" before "(.*)"/ do |e1, e2|
   #  ensure that that e1 occurs before e2.
   #  page.body is the entire content of the page as a string.
-  fail "Unimplemented"
+  
+  expect(page.body).to match(/#{e1}.*#{e2}/m) 
+    
+  # fail "Unimplemented"
 end
 
 # Make it easier to express checking or unchecking several boxes at once
@@ -29,10 +32,39 @@ When /I (un)?check the following ratings: (.*)/ do |uncheck, rating_list|
   # HINT: use String#split to split up the rating_list, then
   #   iterate over the ratings and reuse the "When I check..." or
   #   "When I uncheck..." steps in lines 89-95 of web_steps.rb
-  fail "Unimplemented"
+   
+  selected_ratings = rating_list.split(" ")
+  selected_ratings.each do |rating|
+     uncheck("ratings_#{rating}") if uncheck
+     check("ratings_#{rating}") if !uncheck
+   end
+
+   # fail "Unimplemented"
+end
+# (.*)/
+Then /I should(n't)? see the following movies: (.*)/ do |shouldnt, movie_list|
+   movies_array = movie_list.split(', ')
+   if (shouldnt)
+       movies_array.each do |movie|
+           steps %Q{
+               Then I should not see "#{movie}"
+           }
+       end
+   else
+       movies_array.each do |movie|
+           steps %Q{
+               Then I should see "#{movie}"
+           }
+       end
+   end    
 end
 
 Then /I should see all the movies/ do
   # Make sure that all the movies in the app are visible in the table
-  fail "Unimplemented"
+  
+  rows = page.all('tbody tr').count
+  value = Movie.all.count
+  rows.should == value 
+    
+  # fail "Unimplemented"
 end
